@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{EasyDbError, EasyDbResult};
 
 use std::iter::Peekable;
 use std::str::Chars;
@@ -51,6 +51,7 @@ impl Keyword {
   pub fn from_str(ident: &str) -> Option<Self> {
       Some(match ident.to_uppercase().as_ref() {
           "AND" => Self::And,
+          _ => return None,
       })
   }
 
@@ -71,4 +72,25 @@ impl std::fmt::Display for Keyword {
 /// just an iterator
 pub struct Lexer<'a> {
   iter: Peekable<Chars<'a>>,
+}
+
+// impl<'a> Iterator for Lexer<'a> {
+//   type Item = Result<Token>;
+
+//   fn next(&mut self) -> Option<Result<Token>> {
+//       match self.scan() {
+//           Ok(Some(token)) => Some(Ok(token)),
+//           Ok(None) => self.iter.peek().map(|c| Err(Error::Parse(format!("Unexpected character {}", c)))),
+//           Err(err) => Some(Err(err)),
+//       }
+//   }
+// }
+
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
 }

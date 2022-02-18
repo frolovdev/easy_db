@@ -1,3 +1,7 @@
+pub mod sql;
+pub mod error;
+
+
 fn main() {
-    println!("Hello, world!");
+    println!("Hey man");
 }
