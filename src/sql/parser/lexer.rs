@@ -80,6 +80,8 @@ impl From<Keyword> for Token {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Keyword {
     And,
+    Create,
+    Drop
 }
 
 impl Keyword {}

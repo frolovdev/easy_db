@@ -3,7 +3,7 @@
 use super::super::types::DataType;
 use crate::error::{EasyDbResult, EasyDbError};
 
-use super::lexer::{Lexer, Token};
+use super::lexer::{Lexer, Token, Keyword};
 use std::collections::BTreeMap;
 use std::mem::replace;
 
@@ -11,13 +11,13 @@ use std::mem::replace;
 #[derive(Clone, Debug, PartialEq)]
 #[allow(clippy::large_enum_variant)]
 pub enum Statement {
-    Begin {
-        readonly: bool,
-        version: Option<u64>,
-    },
-    Commit,
-    Rollback,
-    Explain(Box<Statement>),
+    // Begin {
+    //     readonly: bool,
+    //     version: Option<u64>,
+    // },
+    // Commit,
+    // Rollback,
+    // Explain(Box<Statement>),
 
     CreateTable {
         name: String,
@@ -103,14 +103,24 @@ impl<'a> Parser<'a> {
 
     } 
 
+    /// Get the next lexer token, or throws an error if none is found.
+    fn next(&mut self) -> EasyDbResult<Token> {
+        self.lexer.next().unwrap_or_else(|| Err(EasyDbError::Parse("Unexpected end of input".into())))
+    }
+
     fn peek(&mut self) -> EasyDbResult<Option<Token>> {
         self.lexer.peek().cloned().transpose()
     }
 
     fn parse_statement(&mut self) -> EasyDbResult<Statement> {
         match self.peek()? {
+            Some(Token::Keyword(Keyword::Create)) => self.parse_ddl(),
             Some(token) => Err(EasyDbError::Parse(format!("Unexpected token {}", token))),
             None => Err(EasyDbError::Parse("Unexpected end of input".into())),
         }
+    }
+
+    fn parse_ddl(&mut self) -> EasyDbResult<Statement> {
+        match self.next()? {}
     }
 }
