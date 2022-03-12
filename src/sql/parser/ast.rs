@@ -1,9 +1,9 @@
 
 
 use super::super::types::DataType;
-use crate::error::EasyDbResult;
+use crate::error::{EasyDbResult, EasyDbError};
 
-use super::lexer::Lexer;
+use super::lexer::{Lexer, Token};
 use std::collections::BTreeMap;
 use std::mem::replace;
 
@@ -98,4 +98,19 @@ impl<'a> Parser<'a> {
     pub fn new(query: &str) -> Parser {
         Parser { lexer: Lexer::new(query).peekable() }
     } 
+
+    pub fn parse(&mut self) -> EasyDbResult<Statement> {
+
+    } 
+
+    fn peek(&mut self) -> EasyDbResult<Option<Token>> {
+        self.lexer.peek().cloned().transpose()
+    }
+
+    fn parse_statement(&mut self) -> EasyDbResult<Statement> {
+        match self.peek()? {
+            Some(token) => Err(EasyDbError::Parse(format!("Unexpected token {}", token))),
+            None => Err(EasyDbError::Parse("Unexpected end of input".into())),
+        }
+    }
 }
