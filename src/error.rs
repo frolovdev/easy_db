@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display};
 
-
 /// Internal is internal error
 /// everything else is users
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
