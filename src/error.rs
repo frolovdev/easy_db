@@ -7,6 +7,7 @@ use std::fmt::{self, Display};
 pub enum EasyDbError {
     Internal(String),
     Parse(String),
+    Value(String),
 }
 
 /// Result returning Error

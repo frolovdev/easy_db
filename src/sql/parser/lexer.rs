@@ -81,7 +81,26 @@ impl From<Keyword> for Token {
 pub enum Keyword {
     And,
     Create,
-    Drop
+    Drop,
+    Table,
+    Bool,
+    Boolean,
+    Char,
+    Double,
+    Float,
+    Int,
+    Integer,
+    String,
+    Text,
+    Varchar,
+    Primary,
+    Key,
+    Null,
+    Not,
+    Default,
+    Unique,
+    Index,
+    References,
 }
 
 impl Keyword {}
@@ -129,9 +148,10 @@ impl<'a> Iterator for Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-
     pub fn new(input: &'a str) -> Lexer<'a> {
-        Lexer { iter: input.chars().peekable() }
+        Lexer {
+            iter: input.chars().peekable(),
+        }
     }
 
     /// Scans the input for the next token if any, ignoring leading whitespace
