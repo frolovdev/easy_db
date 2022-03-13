@@ -76,7 +76,8 @@ pub struct Column {
     pub datatype: DataType,
     pub primary_key: bool,
     pub nullable: Option<bool>,
-    pub default: Option<Expression>,
+    // TODO: implement expressions
+    // pub default: Option<Expression>,
     pub unique: bool,
     pub index: bool,
     pub references: Option<String>,
@@ -93,7 +94,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&mut self) -> EasyDbResult<Statement> {}
+    pub fn parse(&mut self) -> EasyDbResult<Statement> {
+        let statement = self.parse_statement()?;
+        self.next_if_token(Token::Semicolon);
+        self.next_expect(None)?;
+        Ok(statement)
+    }
 
     /// Get the next lexer token, or throws an error if none is found.
     fn next(&mut self) -> EasyDbResult<Token> {
@@ -106,6 +112,11 @@ impl<'a> Parser<'a> {
     fn next_if<F: Fn(&Token) -> bool>(&mut self, predicate: F) -> Option<Token> {
         self.peek().unwrap_or(None).filter(|t| predicate(t))?;
         self.next().ok()
+    }
+
+    /// Grabs the next lexer token if it is a given token
+    fn next_if_token(&mut self, token: Token) -> Option<Token> {
+        self.next_if(|t| t == &token)
     }
 
     /// Grabs the next lexer token if it is a keyword
@@ -170,11 +181,23 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parses a CREATE TABLE DDL statement. The CREATE TABLE prefix has
+    /// already been consumed.
     fn parse_ddl_create_table(&mut self) -> EasyDbResult<Statement> {
         let name = self.next_ident()?;
         self.next_expect(Some(Token::OpenParen))?;
 
         let mut columns = Vec::new();
+
+        loop {
+            columns.push(self.parse_ddl_column()?);
+            if self.next_if_token(Token::Comma).is_none() {
+                break;
+            }
+        }
+
+        self.next_expect(Some(Token::CloseParen))?;
+        Ok(Statement::CreateTable { name, columns })
     }
 
     fn parse_ddl_column(&mut self) -> EasyDbResult<Column> {
@@ -195,7 +218,7 @@ impl<'a> Parser<'a> {
             },
             primary_key: false,
             nullable: None,
-            default: None,
+            // default: None,
             unique: false,
             index: false,
             references: None,
@@ -216,7 +239,7 @@ impl<'a> Parser<'a> {
                     }
                     column.nullable = Some(true)
                 }
-                Keyword::Default => column.default = Some(self.parse_expression(0)?),
+                // Keyword::Default => column.default = Some(self.parse_expression(0)?),
                 Keyword::Unique => column.unique = true,
                 Keyword::Index => column.index = true,
                 Keyword::References => column.references = Some(self.next_ident()?),
@@ -242,5 +265,9 @@ impl<'a> Parser<'a> {
         Ok(column)
     }
 
-    fn parse_ddl_drop_table(&mut self) -> EasyDbResult<Statement> {}
+    /// Parses a DROP TABLE DDL statement. The DROP TABLE prefix has
+    /// already been consumed.
+    fn parse_ddl_drop_table(&mut self) -> EasyDbResult<Statement> {
+        Ok(Statement::DropTable(self.next_ident()?))
+    }
 }
